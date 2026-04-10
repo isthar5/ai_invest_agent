@@ -1,0 +1,36 @@
+# 环境变量（最重要！）
+.env
+
+# 虚拟环境
+venv/
+env/
+.venv/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 数据文件（PDF, Markdown 解析结果, 缓存数据库）
+data/
+*.pdf
+*.md
+reports/
+data_cache/
+*.db
+*.sqlite3
+
+# 日志与追踪
+*.log
+agent_traces.jsonl
+
+# IDE 配置（如果你用 VS Code 或 PyCharm）
+.vscode/
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Mac 系统垃圾文件
+.DS_Store
