@@ -1,6 +1,4 @@
-是的，一个中文的 `README.md` 能让你的项目主页更直观、更专业，尤其适合国内面试官快速理解项目亮点。以下是一个可直接复制使用的模板，你只需替换其中的仓库地址和联系方式即可。
 
-```markdown
 # ChemInvest Agent —— 化工行业 RAG + 量化投研 Agent
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
