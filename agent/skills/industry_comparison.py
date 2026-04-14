@@ -26,7 +26,8 @@ class IndustryComparisonSkill(BaseSkill):
         if stock not in self.CHEMICAL_PEERS:
             logger.warning(f"股票 {stock} 不在预设化工股票池中，分析可能不准确")
 
-        raw_quant = state.get("quant_raw")
+        # 1. 优先尝试使用 Go-agent 预取的量化结果
+        raw_quant = state.get("go_quant_raw") or state.get("quant_raw")
         if not (isinstance(raw_quant, dict) and (raw_quant.get("stock") == stock or raw_quant.get("top_5"))):
             try:
                 raw_quant = await asyncio.to_thread(run_quant_tool, stock)

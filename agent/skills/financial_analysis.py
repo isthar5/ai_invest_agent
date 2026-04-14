@@ -22,18 +22,31 @@ class FinancialAnalysisSkill(BaseSkill):
         if not stock_code:
             stock_code = self._extract_stock_from_query(query)
 
-        results, _, _ = await hybrid_search(query, limit=10)
-        docs_text = self._merge_docs(results)
+        # 1. 优先尝试使用 Go-agent 预取的 RAG 结果
+        go_rag_raw = state.get("go_rag_raw")
+        if go_rag_raw and isinstance(go_rag_raw, dict):
+            # 假设 Go-agent 的 rag_search 返回格式中包含 docs 或 results
+            # 如果不确定格式，这里可以做简单的解析尝试
+            docs_list = go_rag_raw.get("results") or go_rag_raw.get("docs") or []
+            if docs_list:
+                docs_text = self._merge_go_docs(docs_list)
+            else:
+                results, _, _ = await hybrid_search(query, limit=10)
+                docs_text = self._merge_docs(results)
+        else:
+            results, _, _ = await hybrid_search(query, limit=10)
+            docs_text = self._merge_docs(results)
 
         try:
             financial_raw = await self._extract_financials(docs_text)
             financial = self._build_financial_metrics(financial_raw)
 
-            raw_quant = state.get("quant_raw")
+            # 2. 优先尝试使用 Go-agent 预取的量化结果
+            raw_quant = state.get("go_quant_raw") or state.get("quant_raw")
             if raw_quant is None:
                 raw_quant = await asyncio.to_thread(run_quant_tool, stock_code or query)
+            
             quant = self._build_quant_signal(raw_quant, stock_code=stock_code)
-
             peers = self._extract_peer_comparison(raw_quant)
             insight = await self._cross_reasoning(financial.dict(), quant.dict(), peers)
 
@@ -42,13 +55,24 @@ class FinancialAnalysisSkill(BaseSkill):
                 quant=quant,
                 insight=insight,
                 data_warning="财报数据可能非最新披露，请以官方公告为准",
-                source_count=len(results),
+                source_count=10 if not go_rag_raw else len(go_rag_raw.get("results", []) or go_rag_raw.get("docs", [])),
             )
             return SkillResult(success=True, data=output.dict())
         except Exception as e:
             return SkillResult(success=False, error=f"数据格式校验失败: {e}")
 
     # -------------------- 辅助方法 --------------------
+    def _merge_go_docs(self, docs: list) -> str:
+        """合并 Go-agent 返回的文档列表"""
+        texts = []
+        for doc in docs[:10]:
+            if isinstance(doc, dict):
+                text = doc.get("text") or doc.get("content") or doc.get("metadata", {}).get("text") or ""
+                if text:
+                    texts.append(text[:600])
+            elif isinstance(doc, str):
+                texts.append(doc[:600])
+        return "\n---\n".join(texts)
     def _extract_stock_from_query(self, query: str) -> str:
         for code, info in CHEMICAL_STOCK_POOL.items():
             if info.get("name") in query or code in query:

@@ -14,6 +14,7 @@ from app.config.settings import settings
 from app.quant.quant_tool import run_quant_tool
 from app.agent.skills.financial_analysis import FinancialAnalysisSkill
 from app.agent.skills.industry_comparison import IndustryComparisonSkill
+from app.agent.go_tool_client import GoToolClient
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,8 @@ class AgentState(BaseModel):
     selected_skills: List[str] = []      # 规划阶段决定的技能列表
     skill_results: Dict[str, Any] = {}    # 各技能执行结果
     quant_raw: Any = None
+    go_quant_raw: Any = None              # Go-agent 量化工具结果
+    go_rag_raw: Any = None                # Go-agent RAG 工具结果
     data_timestamp: Optional[datetime] = None
     final_answer: str = ""
     error: str = ""
@@ -148,17 +151,46 @@ async def data_fetch_node(state: AgentState) -> AgentState:
     log_state("data_fetch:before", state)
     try:
         key = state.stock or state.query
-        quant_raw = await asyncio.to_thread(run_quant_tool, key)
-        state.quant_raw = quant_raw
-        if isinstance(quant_raw, dict):
-            ts = (
-                _parse_data_timestamp(quant_raw.get("data_date"))
-                or _parse_data_timestamp(quant_raw.get("date"))
-                or _parse_data_timestamp(quant_raw.get("timestamp"))
-            )
-            state.data_timestamp = ts
+        
+        # 1. 优先尝试通过 Go-agent 获取 RAG 和量化结果 (并行触发)
+        client = GoToolClient()
+        if client.health():
+            try:
+                # 并行调用 Go 工具
+                async def _go_rag():
+                    return client.call("rag_search", {"query": state.query})
+                
+                async def _go_quant():
+                    return client.call("quant_analysis", {"stock": state.stock or state.query})
+
+                go_results = await asyncio.gather(_go_rag(), _go_quant(), return_exceptions=True)
+                
+                if not isinstance(go_results[0], Exception):
+                    state.go_rag_raw = go_results[0]
+                
+                if not isinstance(go_results[1], Exception):
+                    state.go_quant_raw = go_results[1]
+                    # 尝试从 Go 结果中提取时间戳
+                    if isinstance(state.go_quant_raw, dict):
+                        ts = _parse_data_timestamp(state.go_quant_raw.get("data_date")) or \
+                             _parse_data_timestamp(state.go_quant_raw.get("date"))
+                        if ts:
+                            state.data_timestamp = ts
+            except Exception as ge:
+                logger.warning(f"GoToolClient 调用异常: {ge}")
+
+        # 2. 如果 Go-agent 没能提供量化数据，回退到本地量化工具
+        if state.go_quant_raw is None:
+            quant_raw = await asyncio.to_thread(run_quant_tool, key)
+            state.quant_raw = quant_raw
+            if isinstance(quant_raw, dict):
+                ts = (
+                    _parse_data_timestamp(quant_raw.get("data_date"))
+                    or _parse_data_timestamp(quant_raw.get("date"))
+                    or _parse_data_timestamp(quant_raw.get("timestamp"))
+                )
+                state.data_timestamp = ts
     except Exception as e:
-        state.quant_raw = None
         if not state.error:
             state.error = f"数据预取失败: {e}"
     log_state("data_fetch:after", state)
@@ -178,6 +210,8 @@ async def executor_node(state: AgentState) -> AgentState:
                     "query": state.query,
                     "stock": state.stock,
                     "quant_raw": state.quant_raw,
+                    "go_quant_raw": state.go_quant_raw,
+                    "go_rag_raw": state.go_rag_raw,
                     "data_timestamp": state.data_timestamp,
                 }
             )
