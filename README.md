@@ -1,5 +1,5 @@
 
-# ChemInvest Agent —— 化工行业 RAG + 量化投研 Agent
+# ChemInvest Agent —— 化工行业的智能投研 Agent 系统
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
