@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-agent/schema"
+	"net/http"
 )
 
 type QuantTool struct {
@@ -34,7 +35,7 @@ func (q QuantTool) Run(input map[string]interface{}) (interface{}, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("quant status: %d", resp.StatusCode)
 	}
 

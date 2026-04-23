@@ -1,22 +1,51 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from app.rag.pipeline import rag_quant_pipeline
+from app.agent.runtime import run_agent
+from app.multi_agent.runtime import run_multi_agent
+from pydantic import BaseModel
+from typing import Optional
 import json
+import uuid
 
 router = APIRouter()
 
+class ChatRequest(BaseModel):
+    query: str
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    stream: bool = False
+    use_agent: bool = True
+    multi_agent: bool = True  # 新增 multi_agent 开关，默认为 True
 
 @router.post("/chat")
-async def chat(query: str, stream: bool = False):
-    if not stream:
+async def chat(req: ChatRequest):
+    if req.multi_agent:
+        # 使用新的 Multi-Agent 架构
+        result = await run_multi_agent(
+            req.query,
+            session_id=req.session_id or str(uuid.uuid4())
+        )
+        return result
+
+    if req.use_agent:
+        # 使用 LangGraph Agent
+        result = await run_agent(
+            req.query,
+            session_id=req.session_id or str(uuid.uuid4()),
+            user_id=req.user_id or "default"
+        )
+        return result
+
+    if not req.stream:
         # 非流式：返回完整结果
-        result = await rag_quant_pipeline(query, streaming=False)
+        result = await rag_quant_pipeline(req.query, streaming=False)
         return result  # 直接返回字典，FastAPI 会自动转 JSON
     
     # 流式输出 (SSE)
     async def event_generator():
         try:
-            stream_response = await rag_quant_pipeline(query, streaming=True)
+            stream_response = await rag_quant_pipeline(req.query, streaming=True)
             async for chunk in stream_response:
                 # 适配不同格式
                 content = None

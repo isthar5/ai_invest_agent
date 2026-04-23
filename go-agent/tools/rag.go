@@ -6,12 +6,7 @@ import (
 	"fmt"
 	"go-agent/schema"
 	"net/http"
-	"time"
 )
-
-var httpClient = &http.Client{
-	Timeout: 10 * time.Second,
-}
 
 type RAGTool struct {
 	Endpoint string
@@ -45,7 +40,7 @@ func (r RAGTool) Run(input map[string]interface{}) (interface{}, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("rag status: %d", resp.StatusCode)
 	}
 

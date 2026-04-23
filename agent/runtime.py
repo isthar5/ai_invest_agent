@@ -14,13 +14,17 @@ from app.config.settings import settings
 from app.quant.quant_tool import run_quant_tool
 from app.agent.skills.financial_analysis import FinancialAnalysisSkill
 from app.agent.skills.industry_comparison import IndustryComparisonSkill
+from app.agent.skills.structured_query import StructuredQuerySkill
 from app.agent.go_tool_client import GoToolClient
+from app.agent.memory import ShortTermMemory, LongTermMemory
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 class AgentState(BaseModel):
     query: str
+    session_id: str = ""
+    user_id: str = ""
     stock: str = ""
     intent: str = ""
     selected_skills: List[str] = []      # 规划阶段决定的技能列表
@@ -28,7 +32,9 @@ class AgentState(BaseModel):
     quant_raw: Any = None
     go_quant_raw: Any = None              # Go-agent 量化工具结果
     go_rag_raw: Any = None                # Go-agent RAG 工具结果
+    go_sql_raw: Any = None                # Go-agent Text2SQL 结果
     data_timestamp: Optional[datetime] = None
+    memory_context: Dict[str, Any] = {}   # 记忆上下文
     final_answer: str = ""
     error: str = ""
 
@@ -101,6 +107,12 @@ async def planner_node(state: AgentState) -> AgentState:
     if any(k in query for k in ["对比", "竞争对手", "行业", "排名", "地位", "同行"]):
         skills.append("industry_comparison")
 
+    # 规则4：结构化查询（Text2SQL）
+    structured_keywords = ["营收", "利润", "收入", "查询", "历年", "财务数据", "top", "排名"]
+    if any(k in query for k in structured_keywords):
+        if "structured_query" not in skills:
+            skills.append("structured_query")
+
     # 如果没有命中任何技能，默认使用财务分析（兜底）
     if not skills:
         skills.append("financial_analysis")
@@ -152,7 +164,7 @@ async def data_fetch_node(state: AgentState) -> AgentState:
     try:
         key = state.stock or state.query
         
-        # 1. 优先尝试通过 Go-agent 获取 RAG 和量化结果 (并行触发)
+        # 1. 优先尝试通过 Go-agent 获取 RAG、量化 和 SQL 结果 (并行触发)
         client = GoToolClient()
         if client.health():
             try:
@@ -163,7 +175,12 @@ async def data_fetch_node(state: AgentState) -> AgentState:
                 async def _go_quant():
                     return client.call("quant_analysis", {"stock": state.stock or state.query})
 
-                go_results = await asyncio.gather(_go_rag(), _go_quant(), return_exceptions=True)
+                async def _go_sql():
+                    if "structured_query" in state.selected_skills:
+                        return client.call("text2sql", {"query": state.query, "user": "agent"})
+                    return None
+
+                go_results = await asyncio.gather(_go_rag(), _go_quant(), _go_sql(), return_exceptions=True)
                 
                 if not isinstance(go_results[0], Exception):
                     state.go_rag_raw = go_results[0]
@@ -176,6 +193,9 @@ async def data_fetch_node(state: AgentState) -> AgentState:
                              _parse_data_timestamp(state.go_quant_raw.get("date"))
                         if ts:
                             state.data_timestamp = ts
+
+                if not isinstance(go_results[2], Exception):
+                    state.go_sql_raw = go_results[2]
             except Exception as ge:
                 logger.warning(f"GoToolClient 调用异常: {ge}")
 
@@ -212,6 +232,7 @@ async def executor_node(state: AgentState) -> AgentState:
                     "quant_raw": state.quant_raw,
                     "go_quant_raw": state.go_quant_raw,
                     "go_rag_raw": state.go_rag_raw,
+                    "go_sql_raw": state.go_sql_raw,
                     "data_timestamp": state.data_timestamp,
                 }
             )
@@ -290,6 +311,19 @@ async def synthesizer_node(state: AgentState) -> AgentState:
     try:
         final_report = synthesize_financial_report(enriched_data)
         state.final_answer = final_report
+
+        # 保存本轮对话到短期记忆
+        if state.session_id:
+            st_memory = ShortTermMemory(
+                ttl=settings.MEMORY_SHORT_TERM_TTL,
+                redis_url=settings.MEMORY_REDIS_URL,
+                max_len=settings.MEMORY_SHORT_TERM_MAX_LEN
+            )
+            await st_memory.add(state.session_id, {
+                "query": state.query,
+                "answer": state.final_answer,
+                "timestamp": datetime.now().isoformat()
+            })
     except Exception as e:
         state.error = f"报告生成失败: {str(e)}"
         state.final_answer = f"报告生成失败：{e}"
@@ -352,10 +386,41 @@ def create_agent_graph():
     return workflow.compile()
 
 
-async def run_agent(query: str) -> Dict[str, Any]:
+async def run_agent(query: str, session_id: str = "", user_id: str = "") -> Dict[str, Any]:
     """对外暴露的 Agent 入口"""
+    # 1. 获取记忆上下文
+    memory_context = {}
+    if session_id or user_id:
+        st_memory = ShortTermMemory(
+            ttl=settings.MEMORY_SHORT_TERM_TTL,
+            redis_url=settings.MEMORY_REDIS_URL,
+            max_len=settings.MEMORY_SHORT_TERM_MAX_LEN
+        )
+        lt_memory = LongTermMemory(
+            ttl=settings.MEMORY_LONG_TERM_TTL,
+            redis_url=settings.MEMORY_REDIS_URL
+        )
+        
+        # 并发获取短期和长期记忆
+        async def _get_st():
+            return await st_memory.get(session_id) if session_id else []
+        async def _get_lt():
+            return await lt_memory.get(user_id) if user_id else {}
+        
+        short_term, long_term = await asyncio.gather(_get_st(), _get_lt())
+        
+        memory_context = {
+            "recent_history": short_term,
+            "user_preferences": long_term
+        }
+
     graph = create_agent_graph()
-    initial_state = AgentState(query=query)
+    initial_state = AgentState(
+        query=query, 
+        session_id=session_id, 
+        user_id=user_id,
+        memory_context=memory_context
+    )
     final_state = await graph.ainvoke(initial_state)
     
     # final_state 是 dict，不是 AgentState 实例

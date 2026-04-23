@@ -61,6 +61,12 @@ class Settings:
     ENABLE_MMR: bool = _env_bool("ENABLE_MMR", True)
     MMR_LAMBDA: float = _env_float("MMR_LAMBDA", 0.7)
 
+    # Memory 配置
+    MEMORY_REDIS_URL: str = os.getenv("MEMORY_REDIS_URL", "redis://localhost:6379")
+    MEMORY_SHORT_TERM_TTL: int = _env_int("MEMORY_SHORT_TERM_TTL", 3600)
+    MEMORY_LONG_TERM_TTL: int = _env_int("MEMORY_LONG_TERM_TTL", 2592000)  # 30天
+    MEMORY_SHORT_TERM_MAX_LEN: int = _env_int("MEMORY_SHORT_TERM_MAX_LEN", 20)
+
     PDF_DIR: Path = field(init=False)
     MARKDOWN_DIR: Path = field(init=False)
     REPORT_PATH: Path = field(init=False)

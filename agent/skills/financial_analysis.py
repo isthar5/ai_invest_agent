@@ -8,7 +8,7 @@ from app.retrieval.hybrid import hybrid_search
 from app.quant.quant_tool import run_quant_tool
 from app.config.stock_pool import CHEMICAL_STOCK_POOL
 from app.config.settings import settings
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, AuthenticationError
 
 @SkillRegistry.register("financial_analysis")
 class FinancialAnalysisSkill(BaseSkill):
@@ -58,8 +58,14 @@ class FinancialAnalysisSkill(BaseSkill):
                 source_count=10 if not go_rag_raw else len(go_rag_raw.get("results", []) or go_rag_raw.get("docs", [])),
             )
             return SkillResult(success=True, data=output.dict())
+        except AuthenticationError:
+            return SkillResult(
+                success=False, 
+                data={}, 
+                error="LLM 认证失败：请检查 .env 文件中的 DEEPSEEK_API_KEY 是否正确且有效"
+            )
         except Exception as e:
-            return SkillResult(success=False, error=f"数据格式校验失败: {e}")
+            return SkillResult(success=False, data={}, error=f"数据格式校验失败: {e}")
 
     # -------------------- 辅助方法 --------------------
     def _merge_go_docs(self, docs: list) -> str:

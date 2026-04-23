@@ -20,7 +20,7 @@ class IndustryComparisonSkill(BaseSkill):
     async def execute(self, state: dict) -> SkillResult:
         stock = state.get("stock", "").strip()
         if not stock:
-            return SkillResult(success=False, error="缺少股票代码，无法进行行业对比")
+            return SkillResult(success=False, data={}, error="缺少股票代码，无法进行行业对比")
 
         # 确保是化工行业股票（可选校验）
         if stock not in self.CHEMICAL_PEERS:
@@ -32,7 +32,7 @@ class IndustryComparisonSkill(BaseSkill):
             try:
                 raw_quant = await asyncio.to_thread(run_quant_tool, stock)
             except Exception as e:
-                return SkillResult(success=False, error=f"量化数据获取失败: {str(e)}")
+                return SkillResult(success=False, data={}, error=f"量化数据获取失败: {str(e)}")
 
         # 2. 提取目标公司的关键指标
         target_metrics = self._extract_target_metrics(raw_quant, stock)
@@ -53,7 +53,7 @@ class IndustryComparisonSkill(BaseSkill):
             )
             return SkillResult(success=True, data=output.dict())
         except Exception as e:
-            return SkillResult(success=False, error=f"数据格式校验失败: {e}")
+            return SkillResult(success=False, data={}, error=f"数据格式校验失败: {e}")
 
     def _extract_target_metrics(self, quant: dict, stock: str) -> TargetMetrics:
         """从量化结果中提取目标股票的详细指标"""

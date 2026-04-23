@@ -1,0 +1,17 @@
+routes:
+  - path: /rag
+    target: http://rag_service:8001
+  - path: /quant
+    target: http://quant_service:8002
+  - path: /auth
+    target: http://auth_service:8003
+
+rate_limit:
+  default: 20   # 每秒请求数
+
+circuit_breaker:
+  fail_threshold: 5
+  recovery_time: 10  # 秒
+
+cache:
+  ttl: 60

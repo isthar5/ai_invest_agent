@@ -21,6 +21,11 @@ func main() {
 	r.Register(tools.MathTool{})
 	r.Register(tools.RAGTool{Endpoint: cfg.RAGEndpoint})
 	r.Register(tools.QuantTool{Endpoint: cfg.QuantEndpoint})
+	r.Register(tools.Text2SQLTool{
+		Endpoint:      cfg.Text2SQLEndpoint,
+		AllowedTables: []string{"financials", "orders", "balance_sheet"},
+		MaxRetries:    2,
+	})
 
 	engine := server.SetupRouter(r) // 关键修改
 

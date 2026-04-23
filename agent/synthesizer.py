@@ -1,5 +1,5 @@
 import json
-from openai import OpenAI
+from openai import OpenAI, AuthenticationError
 from app.config.settings import settings
 
 def synthesize_financial_report(skill_data: dict) -> str:
@@ -74,5 +74,7 @@ def synthesize_financial_report(skill_data: dict) -> str:
             max_tokens=2000
         )
         return response.choices[0].message.content
+    except AuthenticationError:
+        return "报告生成失败：LLM 认证失败，请检查 API Key 配置。"
     except Exception as e:
         return f"报告生成失败: {e}"

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, validator
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime
 
 
@@ -87,6 +87,7 @@ class TargetMetrics(BaseModel):
     return_rank: Optional[float] = Field(None, ge=0.0, le=1.0)
     volume_z: Optional[float] = Field(None)
     industry_strength: Optional[float] = Field(None)
+    data_timestamp: Optional[datetime] = Field(None, description="数据时间戳")
 
     class Config:
         extra = "forbid"
@@ -94,6 +95,7 @@ class TargetMetrics(BaseModel):
 
 class DetailedMetrics(BaseModel):
     """详细对比数值"""
+    data_timestamp: Optional[datetime] = Field(None, description="数据时间戳")
     target_pred_return: Optional[float] = Field(None)
     peer_avg_pred_return: Optional[float] = Field(None)
     return_rank: Optional[float] = Field(None)
@@ -106,6 +108,7 @@ class DetailedMetrics(BaseModel):
 
 class ComparisonDetail(BaseModel):
     """对比分析详细结果"""
+    data_timestamp: Optional[datetime] = Field(None, description="对比分析数据时间戳")
     target_position: Optional[str] = Field(None, description="目标位置描述")
     relative_strength: Optional[str] = Field(None, description="相对强弱百分比字符串")
     industry_trend: Optional[str] = Field(None, description="行业趋势")
@@ -142,6 +145,21 @@ class FinancialAnalysisOutput(BaseModel):
     insight: str = Field(..., description="交叉推理洞察")
     data_warning: Optional[str] = Field(None, description="数据时效性警告")
     source_count: int = Field(0, ge=0, description="RAG检索文档数")
+
+    class Config:
+        extra = "forbid"
+
+
+# ======================
+# 结构化查询模型 (Text2SQL)
+# ======================
+class StructuredQueryOutput(BaseModel):
+    """StructuredQuerySkill 完整输出结构"""
+    version: Literal["v1"] = "v1"
+    sql: str = Field(..., description="生成的 SQL 语句")
+    result: Optional[List[Dict]] = Field(None, description="查询结果集")
+    explanation: Optional[str] = Field(None, description="查询逻辑解释")
+    request_id: Optional[str] = Field(None, description="请求 ID")
 
     class Config:
         extra = "forbid"

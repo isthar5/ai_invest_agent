@@ -1,14 +1,43 @@
+# 环境变量（绝对不能上传）
 .env
+
+# 数据文件（太大，不能上传）
+data/
+*.pdf
+*.md
+reports/
+data_cache/
+
+# 虚拟环境
+venv/
+env/
+.venv/
+
+# Python 缓存
 __pycache__/
 *.pyc
-*.exe
+*.pyo
+*.pyd
+.Python
+
+# Docker 卷
+qdrant_storage/
+
+# 日志
 *.log
-data/
-reports/
-venv/
-.venv/
-*.db
-*.sqlite3
+agent_traces.jsonl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 测试缓存
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 系统文件
 .DS_Store
-go-agent/tmp/
-go-agent/*.exe
+Thumbs.db
