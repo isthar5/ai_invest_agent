@@ -32,8 +32,11 @@ cp .env.example .env  # 编辑填入 API Key
 
 # 3. 启动服务
 docker-compose up -d       # Qdrant + Redis + PostgreSQL
+
 cd app/go-agent && go run main.go  # Go 工具层
+
 python main.py             # FastAPI 网关
+
 cd frontend && npm run dev # React 前端
 
 
