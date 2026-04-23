@@ -35,7 +35,7 @@ docker-compose up -d       # Qdrant + Redis + PostgreSQL
 cd app/go-agent && go run main.go  # Go 工具层
 python main.py             # FastAPI 网关
 cd frontend && npm run dev # React 前端
-
+```bash
 
 ## 📊 检索评估
 
