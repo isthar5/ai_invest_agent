@@ -1,0 +1,91 @@
+# configs/prompts/report.yaml
+# 投研报告生成 Prompt 集合
+# ============================================================
+
+meta:
+  domain: report
+  description: "投研报告生成 — System Role + 报告结构模板"
+  maintainer: agent-team
+
+prompts:
+
+  # ── P7a: 报告 System Role ─────────────────────────────
+
+  report.system_role:
+    description: "报告生成的 System 角色定义 — 从 build_report_prompt() 内联 f-string 提取"
+    owner: agent
+    current_version: v1
+    versions:
+      v1:
+        created_at: "2026-07-06"
+        changelog: "初始版本 — 从 agent/prompt_builder.py build_report_prompt() 提取角色部分"
+        variables: []
+        template: |
+          你是一位资深化工行业投研分析师，请基于以下多源数据生成一份专业分析报告。
+
+  # ── P7b: 报告结构模板 ─────────────────────────────────
+
+  report.structure:
+    description: "报告结构模板 — 数据注入 + Markdown 章节骨架"
+    owner: agent
+    current_version: v1
+    versions:
+      v1:
+        created_at: "2026-07-06"
+        changelog: "初始版本 — 从 agent/prompt_builder.py build_report_prompt() 提取结构骨架"
+        variables:
+          - financial_json
+          - quant_json
+          - industry_json
+          - insight_text
+          - signal_type
+          - confidence
+          - reasoning
+          - risk_factors
+        template: |
+          【财报数据】
+          {financial_json}
+
+          【量化信号】
+          {quant_json}
+
+          【行业对标】
+          {industry_json}
+
+          【AI 初步洞察】
+          {insight_text}
+
+          【综合研判（系统融合结论，必须采纳）】
+          信号类型：{signal_type}
+          置信度：{confidence}
+          核心逻辑：{reasoning}
+          主要风险：{risk_factors}
+
+          ---
+          请按以下结构生成 Markdown 报告：
+
+          ## 一、综合研判结论
+          （直接引用上方【综合研判】的内容，并稍作展开，100字以内）
+
+          ## 二、财务健康度分析
+          - 营收与利润趋势
+          - 利润率与 ROE 变化
+          - 现金流质量
+
+          ## 三、量化信号解读
+          - 当前信号强度与方向
+          - 核心驱动因素
+          - 与基本面的交叉验证
+
+          ## 四、行业地位与对标
+          - 行业内百分位排名
+          - 与竞争对手的量化对比
+          - 行业趋势判断
+
+          ## 五、风险提示
+          - 财务风险
+          - 量化模型风险
+          - 行业风险
+
+          ## 六、免责声明
+          本报告由 AI 基于公开数据生成，仅供参考，不构成投资建议。

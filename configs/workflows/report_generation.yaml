@@ -1,0 +1,50 @@
+# Report Generation Workflow
+# ============================================================
+# Synthesizer 的 LLM 生成阶段。
+# Fusion / PromptBuilder / Memory 保留在 Node 中。
+# 仅替换 client.chat.completions.create() 调用。
+
+meta:
+  version: "1.0"
+  description: "Report Generation — 可扩展 LLM 生成流水线"
+
+tasks:
+
+  # Stage 0: 主生成
+  generate:
+    executor: llm
+    config:
+      model: deepseek-chat
+      temperature: 0.3
+      max_tokens: 2000
+      # messages 由 Synthesizer 通过 WorkflowService.run() 注入
+      # 不在此声明 prompt_id — 避免与 PromptBuilder 双入口
+
+  # ----- 未来扩展（不改 Node）-----
+  #
+  # polish:
+  #   executor: llm
+  #   depends_on: generate
+  #   config:
+  #     model: deepseek-chat
+  #     temperature: 0.2
+  #     max_tokens: 2000
+  #
+  # fact_check:
+  #   executor: llm
+  #   depends_on: polish
+  #   config:
+  #     model: deepseek-chat
+  #     temperature: 0.0
+  #
+  # format_markdown:
+  #   executor: prompt
+  #   depends_on: fact_check
+  #   config:
+  #     prompt_id: report.markdown_format
+  #
+  # add_citations:
+  #   executor: skill
+  #   depends_on: format_markdown
+  #   config:
+  #     skill: citation_formatter

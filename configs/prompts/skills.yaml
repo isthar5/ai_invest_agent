@@ -1,0 +1,114 @@
+# configs/prompts/skills.yaml
+# Skill 层内联 Prompt — 从 Python f-string 迁移
+# ============================================================
+
+meta:
+  domain: skills
+  description: "Skill 层 Prompt — 财务提取 + 交叉推理"
+  maintainer: skills-team
+
+prompts:
+
+  # ── P8: 财务数据提取 ──────────────────────────────────
+
+  skills.financial_extraction:
+    description: "财报数据提取 — 从非结构化文本提取结构化财务指标（JSON 输出）"
+    owner: skills
+    current_version: v1
+    versions:
+      v1:
+        created_at: "2026-07-06"
+        changelog: "初始版本 — 从 financial_analysis.py L135-158 f-string 迁移"
+        variables:
+          - shared_context
+          - docs_text
+        template: |
+          从以下财报内容中提取关键财务指标，严格按指定 JSON 格式输出。
+
+          {shared_context}
+
+          内容：
+          {docs_text}
+
+          要求：
+          1. 数值统一为 float 类型，增长率以小数表示（如 12% → 0.12）
+          2. 无法提取的字段填 null
+
+          输出格式：
+          {{
+            "revenue": {{"value": 1820.0, "unit": "亿元", "yoy": 0.123}},
+            "net_profit": {{"value": 210.0, "unit": "亿元", "yoy": 0.087}},
+            "gross_margin": {{"value": 0.195, "yoy_change": 0.013}},
+            "net_margin": {{"value": 0.115, "yoy_change": -0.004}},
+            "roe": {{"value": 0.152, "yoy_change": 0.007}},
+            "cash_flow": {{"value": 280.0, "unit": "亿元", "yoy": 0.15}},
+            "growth_summary": "营收稳健增长，利润率小幅改善",
+            "risk_flags": ["原材料价格波动", "汇率风险"]
+          }}
+
+  # ── P9: 多源交叉推理 ──────────────────────────────────
+
+  skills.cross_reasoning:
+    description: "多源交叉推理 — 结合财报 + 量化 + 行业数据生成投研判断"
+    owner: skills
+    current_version: v1
+    versions:
+      v1:
+        created_at: "2026-07-06"
+        changelog: "初始版本 — 从 financial_analysis.py L269-285 f-string 迁移"
+        variables:
+          - financial_json
+          - quant_json
+          - peers_json
+          - shared_context
+        template: |
+          财报数据：{financial_json}
+          量化信号：{quant_json}
+          行业对标：{peers_json}
+
+          {shared_context}
+
+          请以专业投研分析师视角回答：
+
+          1. 量化预测的上涨/下跌是否有基本面支撑？
+          2. 是否存在"情绪驱动"迹象？（结合 volume_z 与 rank）
+          3. 判断该信号的持续性：短期炒作 / 中期趋势 / 长期价值？
+          4. 与行业竞争对手相比，该股票处于什么位置？
+          5. 指出 1-2 个最关键的风险点。
+
+          输出一段 150-200 字的专业分析。
+
+  # ── P11: Skill 结果综合摘要 ────────────────────────────
+
+  skills.summary:
+    description: "综合摘要 — 汇总多个 Skill 的分析结果生成连贯摘要"
+    owner: skills
+    current_version: v1
+    versions:
+      v1:
+        created_at: "2026-07-06"
+        changelog: "初始版本 — 汇总 financial / industry / structured 三个 Skill 输出"
+        variables:
+          - financial_text
+          - industry_text
+          - structured_text
+          - shared_context
+        template: |
+          请基于以下三个分析维度的结果，生成一段 200-300 字的综合摘要。
+
+          【财务分析结果】
+          {financial_text}
+
+          【行业对标结果】
+          {industry_text}
+
+          【结构化查询结果】
+          {structured_text}
+
+          {shared_context}
+
+          摘要要求：
+          1. 突出最重要的发现（不超过 3 个）
+          2. 指出数据之间的关联或矛盾
+          3. 用专业但不晦涩的语言
+          4. 如果某维度数据为空，直接跳过不提及

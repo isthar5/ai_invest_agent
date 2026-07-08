@@ -1,0 +1,40 @@
+# Agent Skills Workflow
+# ============================================================
+# 替换 executor_node 中的硬编码 Skill 调度
+# Planner / Router / Memory / LangGraph 不动
+
+meta:
+  version: "1.1"
+  description: "Agent Executor 阶段的 Skill 编排 + Summary"
+
+tasks:
+
+  financial_analysis:
+    executor: skill
+    config:
+      skill: financial_analysis
+
+  industry_comparison:
+    executor: skill
+    config:
+      skill: industry_comparison
+
+  structured_query:
+    executor: skill
+    depends_on:
+      - financial_analysis
+    config:
+      skill: structured_query
+
+  summary:
+    executor: llm
+    depends_on:
+      - financial_analysis
+      - industry_comparison
+      - structured_query
+    config:
+      prompt_id: skills.summary
+      model: deepseek-chat
+      temperature: 0.3
+      max_tokens: 600
+      system_prompt: "你是化工行业资深投研分析师。请基于以下 Skill 分析结果生成一段综合摘要。"

@@ -1,0 +1,306 @@
+{
+  "financials": {
+    "description": "上市公司年度利润表（合并报表），涵盖营收、利润、每股收益等核心盈利指标",
+    "columns": [
+      {
+        "name": "stock_code",
+        "alias": ["股票代码", "代码", "ticker"],
+        "description": "A股6位代码，如600309"
+      },
+      {
+        "name": "company_name",
+        "alias": ["公司名称", "公司", "企业", "上市公司"],
+        "description": "公司全称，如万华化学集团股份有限公司"
+      },
+      {
+        "name": "fiscal_year",
+        "alias": ["财年", "年份", "年度", "报告期"],
+        "description": "财务数据所属年份，如2024"
+      },
+      {
+        "name": "quarter",
+        "alias": ["季度", "Q", "报告季度", "第几季度"],
+        "description": "财务数据所属季度(1-4)，如Q1=1, Q2=2, Q3=3, Q4=4"
+      },
+      {
+        "name": "revenue",
+        "alias": ["营业收入", "营收", "总收入", "营业总收入"],
+        "description": "主营业务收入（元）"
+      },
+      {
+        "name": "revenue_yoy",
+        "alias": ["营收增速", "营收同比增长", "收入增长率"],
+        "description": "营业收入同比增长率，如0.15表示增长15%"
+      },
+      {
+        "name": "net_profit",
+        "alias": ["净利润", "归母净利润", "利润", "盈利"],
+        "description": "归属于母公司股东的净利润（元）"
+      },
+      {
+        "name": "net_profit_yoy",
+        "alias": ["净利润增速", "利润增速", "净利润同比增长"],
+        "description": "归母净利润同比增长率"
+      },
+      {
+        "name": "gross_profit",
+        "alias": ["毛利", "毛利润"],
+        "description": "营业收入减去营业成本（元）"
+      },
+      {
+        "name": "gross_margin",
+        "alias": ["毛利率", "销售毛利率"],
+        "description": "毛利率 = (营收-营业成本)/营收"
+      },
+      {
+        "name": "net_margin",
+        "alias": ["净利率", "销售净利率"],
+        "description": "净利率 = 净利润/营收"
+      },
+      {
+        "name": "roe",
+        "alias": ["ROE", "净资产收益率", "权益回报率"],
+        "description": "净资产收益率 = 净利润/净资产"
+      },
+      {
+        "name": "roa",
+        "alias": ["ROA", "总资产收益率", "资产回报率"],
+        "description": "总资产收益率 = 净利润/总资产"
+      },
+      {
+        "name": "eps",
+        "alias": ["每股收益", "EPS", "每股盈利"],
+        "description": "基本每股收益（元/股）"
+      },
+      {
+        "name": "operating_profit",
+        "alias": ["营业利润"],
+        "description": "营业收入减去营业成本、税金及附加、期间费用等（元）"
+      },
+      {
+        "name": "rd_expense",
+        "alias": ["研发费用", "研发支出", "研发投入"],
+        "description": "研发费用（元），化工企业技术创新投入指标"
+      }
+    ]
+  },
+
+  "balance_sheet": {
+    "description": "上市公司年度资产负债表，反映企业在报告期末的资产、负债及所有者权益状况",
+    "columns": [
+      {
+        "name": "stock_code",
+        "alias": ["股票代码", "代码", "ticker"],
+        "description": "A股6位代码"
+      },
+      {
+        "name": "company_name",
+        "alias": ["公司名称", "公司"],
+        "description": "公司全称"
+      },
+      {
+        "name": "fiscal_year",
+        "alias": ["财年", "年份", "年度"],
+        "description": "财务数据所属年份"
+      },
+      {
+        "name": "total_assets",
+        "alias": ["总资产", "资产总计", "资产总额"],
+        "description": "企业拥有或控制的全部资产（元）"
+      },
+      {
+        "name": "total_liabilities",
+        "alias": ["总负债", "负债总计", "负债总额", "负债合计"],
+        "description": "企业全部负债（元）"
+      },
+      {
+        "name": "equity",
+        "alias": ["净资产", "所有者权益", "股东权益", "权益"],
+        "description": "归属于母公司股东的所有者权益（元）"
+      },
+      {
+        "name": "current_assets",
+        "alias": ["流动资产"],
+        "description": "流动资产合计（元）"
+      },
+      {
+        "name": "current_liabilities",
+        "alias": ["流动负债"],
+        "description": "流动负债合计（元）"
+      },
+      {
+        "name": "debt_ratio",
+        "alias": ["资产负债率", "负债率", "杠杆率"],
+        "description": "资产负债率 = 总负债/总资产"
+      },
+      {
+        "name": "current_ratio",
+        "alias": ["流动比率", "流动比"],
+        "description": "流动比率 = 流动资产/流动负债"
+      },
+      {
+        "name": "fixed_assets",
+        "alias": ["固定资产", "固定资产净额"],
+        "description": "固定资产（元），化工企业产能投资的重要指标"
+      },
+      {
+        "name": "construction_in_progress",
+        "alias": ["在建工程"],
+        "description": "在建工程（元），反映企业的产能扩张计划"
+      }
+    ]
+  },
+
+  "cash_flow": {
+    "description": "上市公司年度现金流量表，反映企业经营、投资、筹资活动的现金流入流出",
+    "columns": [
+      {
+        "name": "stock_code",
+        "alias": ["股票代码", "代码", "ticker"],
+        "description": "A股6位代码"
+      },
+      {
+        "name": "company_name",
+        "alias": ["公司名称", "公司"],
+        "description": "公司全称"
+      },
+      {
+        "name": "fiscal_year",
+        "alias": ["财年", "年份", "年度"],
+        "description": "财务数据所属年份"
+      },
+      {
+        "name": "operating_cf",
+        "alias": ["经营现金流", "经营性现金流", "经营活动现金流", "经营现金净额"],
+        "description": "经营活动产生的现金流量净额（元）"
+      },
+      {
+        "name": "investing_cf",
+        "alias": ["投资现金流", "投资活动现金流"],
+        "description": "投资活动产生的现金流量净额（元），负值表示资本开支"
+      },
+      {
+        "name": "financing_cf",
+        "alias": ["筹资现金流", "融资现金流", "筹资活动现金流"],
+        "description": "筹资活动产生的现金流量净额（元）"
+      },
+      {
+        "name": "free_cash_flow",
+        "alias": ["自由现金流", "FCF", "企业自由现金流"],
+        "description": "自由现金流 = 经营现金流 - 资本支出"
+      },
+      {
+        "name": "capex",
+        "alias": ["资本支出", "资本开支", "资本性支出"],
+        "description": "购建固定资产、无形资产支付的现金（元）"
+      },
+      {
+        "name": "dividend_paid",
+        "alias": ["分红", "派息", "股利支付"],
+        "description": "分配股利、利润或偿付利息支付的现金（元）"
+      }
+    ]
+  },
+
+  "stock_basic": {
+    "description": "化工行业上市公司基本信息，包含股票代码、名称、上市日期、所属细分行业等",
+    "columns": [
+      {
+        "name": "stock_code",
+        "alias": ["股票代码", "代码", "ticker", "证券代码"],
+        "description": "A股6位代码，如600309.SH（沪市）或002493.SZ（深市）"
+      },
+      {
+        "name": "company_name",
+        "alias": ["公司名称", "公司", "名称", "企业名称"],
+        "description": "公司全称"
+      },
+      {
+        "name": "short_name",
+        "alias": ["简称", "股票简称", "证券简称"],
+        "description": "股票交易简称，如万华化学"
+      },
+      {
+        "name": "sector",
+        "alias": ["行业", "所属行业", "板块", "细分行业"],
+        "description": "化工细分行业分类，如MDI/聚氨酯、石化/炼化、化纤、化肥等"
+      },
+      {
+        "name": "listing_date",
+        "alias": ["上市日期", "上市时间", "IPO日期"],
+        "description": "公司首次公开发行上市日期"
+      },
+      {
+        "name": "market_cap",
+        "alias": ["市值", "总市值", "market cap"],
+        "description": "总市值（元）"
+      },
+      {
+        "name": "province",
+        "alias": ["省份", "所在省份", "地区"],
+        "description": "公司注册地所在省份"
+      }
+    ]
+  },
+
+  "industry_metrics": {
+    "description": "化工行业细分领域的行业指标与横向对比数据，包括行业排名、行业均值、行业景气度等",
+    "columns": [
+      {
+        "name": "stock_code",
+        "alias": ["股票代码", "代码", "ticker"],
+        "description": "A股6位代码"
+      },
+      {
+        "name": "company_name",
+        "alias": ["公司名称", "公司"],
+        "description": "公司全称"
+      },
+      {
+        "name": "fiscal_year",
+        "alias": ["财年", "年份", "年度"],
+        "description": "数据所属年份"
+      },
+      {
+        "name": "sector",
+        "alias": ["行业", "细分行业", "板块"],
+        "description": "化工细分行业，如MDI、石化、化纤、钛白粉"
+      },
+      {
+        "name": "industry_rank",
+        "alias": ["行业排名", "排名", "行业内排名"],
+        "description": "公司在同行业中的综合排名（1=最优）"
+      },
+      {
+        "name": "industry_avg_revenue",
+        "alias": ["行业平均营收", "行业营收均值"],
+        "description": "同行业上市公司营业收入平均值（元）"
+      },
+      {
+        "name": "industry_avg_roe",
+        "alias": ["行业平均ROE", "行业ROE均值"],
+        "description": "同行业上市公司ROE平均值"
+      },
+      {
+        "name": "industry_avg_gross_margin",
+        "alias": ["行业平均毛利率", "行业毛利率均值"],
+        "description": "同行业上市公司毛利率平均值"
+      },
+      {
+        "name": "relative_strength",
+        "alias": ["相对强度", "行业相对强度", "超额收益"],
+        "description": "公司股价相对于行业指数的超额收益，如0.05表示跑赢行业5%"
+      },
+      {
+        "name": "peer_count",
+        "alias": ["同行数量", "可比公司数"],
+        "description": "同细分行业内可比上市公司数量"
+      },
+      {
+        "name": "market_share",
+        "alias": ["市场份额", "市占率"],
+        "description": "公司营收占细分行业总营收的比例"
+      }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package runtime.v1;
+
+option go_package = "github.com/ai-invest-agent/go-runtime/proto/runtime/v1;runtimev1";
+
+// ── Task Status ────────────────────────────────────────
+
+enum TaskStatus {
+  TASK_STATUS_UNSPECIFIED = 0;
+  TASK_STATUS_CREATED = 1;
+  TASK_STATUS_QUEUED = 2;
+  TASK_STATUS_RUNNING = 3;
+  TASK_STATUS_COMPLETED = 4;
+  TASK_STATUS_FAILED = 5;
+  TASK_STATUS_TIMEOUT = 6;
+  TASK_STATUS_CANCELLED = 7;
+}
+
+// ── Task ───────────────────────────────────────────────
+
+message Task {
+  string task_id = 1;
+  string request_id = 2;
+  string trace_id = 3;
+  string skill = 4;
+  bytes payload = 5;           // JSON-serialized dict
+  int32 priority = 6;
+  double timeout_ms = 7;
+  map<string, string> metadata = 8;
+  int32 max_retries = 9;       // 0 = no retry
+}
+
+// ── TaskResult ─────────────────────────────────────────
+
+message TaskResult {
+  string task_id = 1;
+  TaskStatus status = 2;
+  bytes result = 3;            // JSON-serialized result data
+  string error = 4;
+  double latency_ms = 5;
+  int32 retry_count = 6;
+}
+
+// ── CancelTask ─────────────────────────────────────────
+
+message CancelTaskRequest {
+  string task_id = 1;
+}
+
+message CancelTaskResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// ── gRPC Service ───────────────────────────────────────
+
+service SchedulerService {
+  // SubmitTask: 提交 Task，返回 TaskResult
+  rpc SubmitTask(Task) returns (TaskResult);
+
+  // SubmitTaskStream: 提交 Task，返回状态更新流（预留）
+  rpc SubmitTaskStream(Task) returns (stream TaskResult);
+
+  // CancelTask: 取消正在排队或执行中的 Task
+  rpc CancelTask(CancelTaskRequest) returns (CancelTaskResponse);
+}

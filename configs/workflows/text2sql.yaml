@@ -1,0 +1,35 @@
+# Text2SQL Pipeline
+# ============================================================
+
+meta:
+  version: "1.0"
+  description: "自然语言 → SQL → 执行结果"
+
+tasks:
+
+  schema_link:
+    executor: skill
+    config:
+      skill: hybrid_schema_linker
+      question: "__FROM_RUNTIME__"
+      allowed_tables: "__FROM_RUNTIME__"
+
+  generate_sql:
+    executor: llm
+    depends_on: schema_link
+    config:
+      prompt_id: text2sql.first_attempt
+      model: deepseek-chat
+      temperature: 0.1
+      max_tokens: 1000
+      system_prompt: "你是一个只输出SQL代码的助手。"
+
+  validate_sql:
+    executor: guard
+    depends_on: generate_sql
+
+  execute_sql:
+    executor: sql
+    depends_on: validate_sql
+    config:
+      max_rows: 1000
