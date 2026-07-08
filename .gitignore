@@ -1,52 +1,74 @@
-<<<<<<< HEAD
+# ============================
 # 环境变量（绝对不能上传 — 含 API Key）
+# ============================
 .env
 .env.local
 .env.*.local
 
-# 数据文件（太大 / 二进制）
+# ============================
+# 数据文件（太大 / 二进制，不上传）
+# ============================
 data/
+data_cache/
 *.db
 *.parquet
 *.zip
-reports/
-data_cache/
-hf_cache/
-=======
-# 环境变量（绝对不能上传）
-.env
-
-# 数据文件（太大，不能上传）
-data/
 *.pdf
-*.md
+*.txt
 reports/
-data_cache/
->>>>>>> 287cb7da8175edaa4942f50c9ac276bc35fd0c79
+qdrant_storage/
+hf_cache/
 
+# ============================
+# 测试文件（整个屏蔽）
+# ============================
+tests/
+*_test.py
+test_*.py
+gotest.py
+convert_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ============================
+# 模型下载脚本
+# ============================
+model.py
+model_BGE.py
+
+# ============================
 # 虚拟环境
+# ============================
 venv/
 env/
 .venv/
+.Python
 
+# ============================
 # Python 缓存
+# ============================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-<<<<<<< HEAD
 *.py[cod]
 *$py.class
 
+# ============================
 # Docker 卷 / 存储
+# ============================
 qdrant_storage/
 
+# ============================
 # 日志 / 追踪
+# ============================
 *.log
 agent_traces.jsonl
 
+# ============================
 # IDE / 编辑器
+# ============================
 .vscode/
 .idea/
 .cursor/
@@ -56,53 +78,47 @@ agent_traces.jsonl
 .pydevproject
 .settings/
 
+# ============================
 # Linter 缓存
+# ============================
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-=======
 
-# Docker 卷
-qdrant_storage/
-
-# 日志
-*.log
-agent_traces.jsonl
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# 测试缓存
-.pytest_cache/
->>>>>>> 287cb7da8175edaa4942f50c9ac276bc35fd0c79
-.coverage
-htmlcov/
-
+# ============================
 # 系统文件
+# ============================
 .DS_Store
-<<<<<<< HEAD
 Thumbs.db
+
+# ============================
+# 编译二进制
+# ============================
 *.exe
 *.dll
 *.so
 *.dylib
 
-# ── Demo 脚本 (不影响主项目) ──
+# ============================
+# Demo 脚本
+# ============================
 minimal_server.py
 
-# ── 前端 ──
+# ============================
+# 前端构建产物
+# ============================
 frontend/node_modules/
 frontend/dist/
 frontend/.tmp/
 
-# ── Go Sidecar ──
+# ============================
+# Go Sidecar 编译产物
+# ============================
 go-runtime/bin/
+go-agent/go-agent.exe
+app/go-agent/go-agent.exe
 
-# ── Tasks (嵌套仓库) ──
+# ============================
+# Tasks (嵌套仓库)
+# ============================
 tasks/
-=======
-Thumbs.db
->>>>>>> 287cb7da8175edaa4942f50c9ac276bc35fd0c79

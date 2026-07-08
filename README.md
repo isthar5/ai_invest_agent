@@ -1,302 +1,221 @@
-<<<<<<< HEAD
-# ChemInvest AI Copilot
+<p align="center">
+  <h1 align="center">🧪 ChemInvest AI Copilot</h1>
+  <p align="center">化工行业智能投研 Agent — Multi-Agent + Workflow + RAG + Text-to-SQL</p>
+</p>
 
-**An Enterprise AI Copilot for Chemical Industry Research & Decision Intelligence**
-
----
-
-ChemInvest AI Copilot 是一个面向企业投研场景的 AI Agent 系统，围绕 **企业财务分析**、**行业知识检索**、**结构化数据查询** 三类核心能力，构建了 Multi-Agent + Workflow + RAG + Text-to-SQL 的智能分析平台。
-
-系统支持自然语言分析企业经营情况，自动规划 Agent Workflow，调用结构化数据库与行业知识库，最终生成可解释的企业分析报告。
-
----
-
-## Dashboard
-
-> 截图占位 — 替换为实际 Dashboard 截图
-
-```
-┌──────────────────────────────────────────────────────────┐
-│  [Dashboard]                                              │
-│  ┌─────────┐  ┌──────────────────┐  ┌──────────────────┐ │
-│  │ Chat    │  │ Workflow Trace   │  │ Enterprise       │ │
-│  │         │  │                  │  │ Profile          │ │
-│  │ 推荐问题 │  │ Router           │  │ ┌────┬────┬────┐ │ │
-│  │ □ 营收分析│  │   ↓             │  │ │营收│利润│ROE │ │ │
-│  │ □ 风险分析│  │ Schema Link     │  │ ├────┼────┼────┤ │ │
-│  │ □ 行业对比│  │   ↓             │  │ │    │    │    │ │ │
-│  │         │  │ Generate SQL     │  │ └────┴────┴────┘ │ │
-│  │ [输入框] │  │   ↓             │  │                  │ │
-│  │         │  │ Execute SQL      │  │ 风险分析          │ │
-│  └─────────┘  │   ↓             │  │ ████░░░░ 40%     │ │
-│               │ LLM Interpret    │  └──────────────────┘ │
-│               └──────────────────┘                       │
-│  [分析报告 — Markdown 渲染]                               │
-└──────────────────────────────────────────────────────────┘
-```
-
-| Dashboard | Workflow Trace | Enterprise Profile | Chat | Report |
-|:---------:|:-------------:|:------------------:|:----:|:------:|
-| 一站式面板 | 实时步骤追踪 | 企业财务画像 | 引导式提问 | Markdown 报告 |
+<p align="center">
+  <a href="https://github.com/isthar5/ai_invest_agent"><img src="https://img.shields.io/badge/Python-3.11+-blue?style=flat-square" alt="Python 3.11+"></a>
+  <a href="https://github.com/isthar5/ai_invest_agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"></a>
+</p>
 
 ---
 
-## ✨ Features
+## 🚀 什么是 ChemInvest AI Copilot？
 
-```
-✓ Enterprise AI Copilot Dashboard    一站式投研分析面板
-✓ Multi-Agent Workflow               多 Agent 协作编排
-✓ Workflow Trace Visualization       工作流实时步骤追踪
-✓ Enterprise Profile Dashboard       企业财务画像卡片
-✓ Guided Questions                   智能引导式提问
-✓ Hybrid RAG Retrieval               混合检索增强生成
-✓ Text-to-SQL Query                  自然语言转结构化查询
-✓ Financial Analysis Report          自动生成企业经营分析报告
-✓ Workflow Engine                    YAML 驱动的工作流引擎
-✓ Prompt Registry                    Prompt 版本管理与模板注入
-```
+ChemInvest 是一个**面向化工行业的企业级 AI 投研平台**，覆盖从年报入库、知识检索到智能研报生成的完整链路。
+
+- **Multi-Agent 协作**：Router 模式调度 4 个专业 Agent（财报分析 / 行业对标 / Text-to-SQL / RAG），自动分派任务、并发执行、结果融合。
+- **Workflow 引擎**：YAML 声明式工作流 → ExecutionPlan → 多 Executor 并行执行，支持依赖编排、超时重试、状态追踪。
+- **混合 RAG 检索**：Dense + Sparse 双路并行召回 → Cross-Encoder 精排 Top-K → MMR 去冗重排，在 277 份化工年报上 Recall@10 达到 0.84。
+- **Text-to-SQL 管线**：自研 Schema Linking → SQL 生成 → Guard 安全校验 → 执行 → LLM 结果解释，自然语言查财务数据库。
+- **Go 工具调度层**：Go + Gin 高性能工具服务，Schema 自动发现，并发调用降低延迟 45%。
+  
+  ![Dashboard](docs/images/演示图.gif)
 
 ---
 
-## Demo
+## 🧭 快速导航
 
-### Demo 1 — 企业经营分析
+| 链接                 | 说明                                |
+|:------------------ |:--------------------------------- |
+| ⚡ [快速启动](#-快速开始)   | 本地搭建前后端服务                         |
+| 🏗️ [架构设计](#-核心设计) | Multi-Agent + Workflow 架构详解       |
+| 📊 [检索评估](#-检索评估)  | RAG 在 277 份化工年报上的评测               |
+| 🖥️ [控制台](#-控制台)   | Dashboard · Chat · Workflow Trace |
+| ❓ [常见问题](#-常见问题)   | FAQ                               |
 
-> 分析万华化学近五年各季度营业收入
+---
 
-```
-Router → Text2SQL
-  │
-  ├─ Schema Link   → financials 表
-  ├─ Generate SQL  → SELECT revenue ... WHERE company_name LIKE '%万华化学%'
-  ├─ Validate SQL  → Guard 安全校验通过
-  ├─ Execute SQL   → 20 行季度数据
-  └─ LLM Interpret → "万华化学 2021-2025 营收从 313 亿增长至 2032 亿..."
-```
+## 📑 目录
 
-### Demo 2 — 企业知识问答
+- [🚀 什么是 ChemInvest](#-什么是-cheminvest-ai-copilot)
+- [✨ 核心功能](#-核心功能)
+- [🏗️ 核心设计](#-核心设计)
+- [💡 项目质量](#-项目质量怎么样)
+- [🖥️ 控制台](#-控制台)
+- [📊 检索评估](#-检索评估)
+- [⚡ 快速开始](#-快速开始)
+- [🗺️ Roadmap](#-roadmap)
+- [❓ 常见问题](#-常见问题)
 
-> 万华化学有哪些经营风险？
+---
 
-```
-Router → RAG
-  │
-  ├─ Hybrid Search  → Dense(BGE) + Sparse(BM25) 双路检索
-  ├─ Reranker       → CrossEncoder 精排 Top-5
-  ├─ MMR            → 多样性去冗余
-  └─ LLM Generate   → "主要风险：原材料价格波动、海外贸易摩擦..."
-```
-
-### Demo 3 — 行业对比分析
-
-> 化工行业哪些企业成长性最好？
+## ✨ 核心功能
 
 ```
-Router → Quant
-  │
-  ├─ Factor Engine  → 技术因子 + 动量因子 + 截面排名
-  ├─ LightGBM       → 预测收益排名
-  ├─ SHAP           → 特征重要性解释
-  └─ LLM Report     → "成长性 Top3：卫星化学、万华化学、华鲁恒升..."
+✓ Multi-Agent 协作          Router → 4 专业 Agent，并发执行 + 结果融合
+✓ Workflow 引擎             YAML 定义 → ExecutionPlan → 多 Executor 并行
+✓ Workflow Trace             SSE 实时推送步骤状态，前端可视化渲染
+✓ 混合 RAG 检索             Dense + Sparse 双路 → Rerank → MMR
+✓ Text-to-SQL Pipeline      Schema Link → Guard → Execute → Interpret
+✓ 量化预测引擎              LightGBM 多因子模型 + SHAP 特征归因
+✓ Go 工具调度层             Go + Gin 高性能服务，并发调用低延迟
+✓ 分层记忆系统              短期会话 + 长期偏好 + 自动摘要压缩
+✓ Prompt Registry          模板版本化 + 变量注入 + 上下文裁剪
+✓ 企业财务画像              营收/利润/ROE 财务卡片 + 风险雷达图
 ```
 
 ---
 
-## Architecture
+## 🏗️ 核心设计
 
-```
-                         Enterprise AI Copilot
-                                │
-                 ┌──────────────┴──────────────┐
-                 │                             │
-           Enterprise Chat            Enterprise Profile
-                 │
-           Router Agent
-                 │
-         ┌───────┼───────┐
-         │       │       │
-     Text2SQL   RAG    Quant
-         │       │       │
-         └───────┼───────┘
-                 │
-         Workflow Runtime
-                 │
-    ┌────────────────────────────┐
-    │  ExecutionPlan             │
-    │      ↓                     │
-    │  Executor                  │
-    │  ┌────┬────┬────┬──────┐   │
-    │  │LLM │SQL │Skill│Result│   │
-    │  └────┴────┴────┴──────┘   │
-    └────────────────────────────┘
-                 │
-    Workflow Trace Visualization (SSE)
-```
+采用前后端分离架构，后端按职责分层：
+
+![Dashboard](docs/images/首图.png)
+
+### 核心链路
+
+![Dashboard](docs/images/结构图.png)
 
 ---
 
-## ⭐ Project Highlights
+## 💡 项目质量怎么样？
 
-```
-✓ 自研 Workflow Framework     YAML 定义 → ExecutionPlan → 多 Executor 并行
-✓ Prompt Registry             Prompt 模板版本化 + 变量注入 + 上下文裁剪
-✓ Workflow Trace              SSE 实时推送每步状态，前端可视化渲染
-✓ Multi-Agent Runtime         Planner → Executor → Synthesizer 编排
-✓ Enterprise Dashboard        企业财务画像 + 知识图谱 + 报告展示
-✓ Text-to-SQL Pipeline        SchemaLink → Guard → Execute → Interpret
-✓ Hybrid RAG                  Dense + Sparse 双路 → Rerank → MMR
-✓ Quant Engine                LightGBM + SHAP 可解释多因子选股
-```
+### 1. 代码规模
+
+| 维度        | 数据                             |
+|:--------- |:------------------------------ |
+| Python 后端 | ~25,000 行，覆盖 8 个核心模块、40+ 个源文件  |
+| React 前端  | ~15,000 行 TypeScript，20+ 页面/组件 |
+| Go 工具层    | ~3,000 行，gRPC + Protobuf       |
+| YAML 配置   | Prompt 模板 + Workflow 定义，声明式管理  |
+| 检索测试集     | 277 份化工行业年报（200+ 家上市公司）        |
+
+### 2. 工程规范
+
+- **分层架构**：`api/ → agent/ → workflow/ → runtime/ → services/ → retrieval/`，每层职责清晰，不存在跨层调用。
+- **自研 Workflow 框架**：YAML 声明式定义 → TaskBuilder 构建执行计划 → Executor 并行调度，支持 `depends_on` 依赖编排、超时重试、Stage 分段、SSE 实时追踪。
+- **Prompt Registry**：Prompt 模板集中管理（`configs/prompts/`），支持版本号、变量注入 `${variable}`、Token 窗口裁剪、多模板链式组合。
+- **多线程池 + Context 透传**：按工作负载特征配置独立线程池（MCP 调用、检索、模型流式输出等），通过 `RequestContext` 确保 Trace 信息不丢失。
+- **三态熔断器**：CLOSED → OPEN → HALF_OPEN，每个模型独立健康检查，失败自动降级到备选模型，业务层无感知。
+- **流式输出**：SSE 实时推送，首包探测机制保证模型切换时用户无感知。
+
+### 3. 可扩展性
+
+| 扩展点          | 方式                                               |
+|:------------ |:------------------------------------------------ |
+| 新增 Skill     | 实现 Skill 接口，自动注册到 SkillRegistry                  |
+| 新增 Agent     | 继承 BaseAgent，Router 自动发现路由                       |
+| 新增检索通道       | 实现 HybridRetriever 接口，加入检索管线                     |
+| 新增 Executor  | 实现 Executor 接口，YAML 中声明即可引用                      |
+| 新增 Prompt 模板 | 在 `configs/prompts/` 新增 YAML，PromptRegistry 自动加载 |
+| 新增数据源        | 实现 DataEngine 接口，pipeline 中自由组合                  |
+
+### 4. 生产级特性
+
+| 特性        | 说明                                             |
+|:--------- |:---------------------------------------------- |
+| 限流        | 全局并发限制 + API 级别限流，防止模型调用被打爆                    |
+| 熔断        | 模型健康检查 + 失败计数，自动熔断不可用模型                        |
+| 可观测性      | 全链路 RequestID 追踪 + Metrics + Logger + Usage 统计 |
+| 流式输出      | SSE 实时推送，首包探测保证模型切换无感知                         |
+| 会话记忆      | 短期滑动窗口 + 长期偏好存储 + 自动摘要压缩                       |
+| Schema 缓存 | Text-to-SQL 的 Schema 信息预热缓存，加速 Schema Linking  |
 
 ---
 
-## Technical Highlights
+## 🖥️ 控制台
 
-### Workflow Framework
+### 用户问答界面
 
-```
-YAML Workflow → ExecutionPlan → Executor → Runtime
-    支持: Task · Dependency · Retry · Timeout · Stage
-```
+用户可以在输入框中直接输入问题，输入框下方提供示例问题标签，点击自动填充：
 
-### Multi-Agent Runtime
+- ✅ 自然语言输入
+- ✅ 示例问题快速填充
+- ✅ Markdown 格式渲染
+- ✅ 代码高亮显示
+- ✅ 推理过程可视化
 
-```
-Planner → Executor → Synthesizer → Workflow
-    支持: 意图路由 · 并行执行 · 结果融合 · 降级兜底
-```
+### 企业管理面板
 
-### Prompt Registry
+一站式查看企业财务画像：
 
-```
-Prompt Template → Context Injection → Window Management → Template Versioning
-    支持: 版本管理 · 变量替换 · Token 裁剪 · 多 Prompt 链
-```
+- 📊 营收 / 利润 / ROE 财务卡片
+- 📈 风险雷达图
+- 🔗 知识图谱关联
+- 📝 AI 生成的经营分析报告
 
 ### Workflow Trace
 
-```
-Task Started → Running → Completed  ── SSE 实时流
-    前端: WorkflowNode · StatusBadge · WorkflowTimeline
-```
-
-### Enterprise Dashboard
+实时查看 Agent 工作流执行状态：
 
 ```
-Enterprise Profile · Knowledge Graph · Workflow Panel · Markdown Report
-```
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|:------|:-----------|
-| **Frontend** | React 18 · TypeScript · Vite · TailwindCSS 3 · ReactFlow |
-| **Backend** | FastAPI · Uvicorn · SSE · WebSocket · Pydantic |
-| **LLM** | DeepSeek API (deepseek-chat) · OpenAI SDK |
-| **Vector DB** | Qdrant · gRPC · Dense(BGE) + Sparse(BM25) |
-| **Quant** | LightGBM · SHAP · AKShare · Pandas · Parquet |
-| **Storage** | SQLite · Redis · PostgreSQL (optional) |
-| **DevOps** | Docker Compose · Prometheus · GitHub Actions |
-| **Go Sidecar** | Gin · gRPC · Protobuf |
-
----
-
-## Project Structure
-
-```
-ai_invest_agent/
-├── app/
-│   ├── main.py                 # FastAPI 入口 (CORS/Metrics/RateLimiter)
-│   ├── api/                    # API 路由层
-│   │   ├── chat.py             # POST /api/chat
-│   │   ├── workflow.py         # POST /api/workflow/run (SSE)
-│   │   └── websocket.py        # WS /ws (Multi-Agent)
-│   ├── agent/                  # Agent 引擎
-│   │   ├── runtime.py          # LangGraph 运行时
-│   │   ├── fusion.py           # 跨技能融合
-│   │   └── memory/             # 短期/长期/摘要/共享记忆
-│   ├── multi_agent/            # Multi-Agent 编排
-│   ├── workflow/               # 工作流引擎 (YAML → ExecutionPlan)
-│   ├── runtime/                # 任务执行运行时 (Executor/Retry/Timeout)
-│   ├── services/
-│   │   ├── text2sql/           # Text-to-SQL Pipeline
-│   │   └── prompt/             # Prompt Registry
-│   ├── rag/                    # RAG 检索增强
-│   ├── retrieval/              # 检索子系统 (Hybrid/Reranker/MMR)
-│   ├── quant/                  # 量化引擎 (Factor/LightGBM/SHAP)
-│   ├── observability/          # 日志/指标/追踪
-│   ├── middleware/              # 限流/熔断
-│   └── config/                 # 配置 + 股票池
-├── frontend/                   # React + Vite + TailwindCSS
-│   └── src/
-│       ├── pages/              # Dashboard
-│       ├── components/         # Chat · Workflow · Enterprise · UI
-│       ├── hooks/              # useWorkflowStream · useQuestionClick
-│       └── api/                # API Client
-├── configs/                    # YAML 配置
-│   ├── prompts/                # Prompt 模板
-│   └── workflows/              # Workflow 定义
-├── scripts/                    # 数据下载 & 导入
-├── go-runtime/                 # Go Sidecar (gRPC 调度)
-├── docker-compose.yaml
-└── Dockerfile
+Router → Text2SQL Agent
+  ├─ ✅ Schema Linking   (120ms)
+  ├─ ✅ SQL Generation   (350ms)
+  ├─ ✅ Guard Validate   (45ms)
+  ├─ ✅ SQL Execute      (210ms)
+  └─ ⏳ LLM Interpret    (进行中...)
 ```
 
 ---
 
-## 🚀 Roadmap
+## 📊 检索评估
 
-```
-✓ Workflow DAG              有向无环图任务编排
-✓ Enterprise Profile         企业财务画像 Dashboard
-✓ Workflow Trace             实时步骤可视化
+在 **277 份化工行业年报**测试集上：
 
-□ Plugin Framework           插件化 Skill 扩展
-□ Evaluation Platform        检索 & 生成质量评估
-□ MCP Support                Model Context Protocol
-□ Memory Framework           多层级记忆管理
-□ Agent Marketplace          Agent & Skill 市场
-```
+| 指标        | 基线 (Hybrid) | + Reranker | 提升       |
+|:--------- |:-----------:|:----------:|:--------:|
+| Recall@10 | 0.65        | 0.84       | **+29%** |
+| MRR       | 0.42        | 0.61       | **+45%** |
+| NDCG@10   | 0.51        | 0.72       | **+41%** |
+
+> 评估脚本：`scripts/evaluate_retrieval.py`，支持自定义测试集与指标扩展。
 
 ---
 
-## Quick Start
+## ⚡ 快速开始
 
-### Prerequisites
+### 环境要求
 
 - Python 3.11+
 - Node.js 18+
 - Docker & Docker Compose
-- [DeepSeek API Key](https://platform.deepseek.com/)
+- [DeepSeek API Key](https://platform.deepseek.com/)（或兼容的 OpenAI SDK 接口）
 
-### Setup
+### 本地搭建
 
 ```bash
-# 1. 克隆
-git clone <repo-url> && cd ai_invest_agent
+# 1. 克隆项目
+git clone https://github.com/isthar5/ai_invest_agent.git
+cd ai_invest_agent
 
-# 2. 环境变量
+# 2. 配置环境变量
 cp .env.example .env
-# 编辑 .env → 填入 DEEPSEEK_API_KEY
+# 编辑 .env，填入 DEEPSEEK_API_KEY
 
-# 3. 安装
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cd frontend && npm install && cd ..
+# 3. 启动基础设施
+docker compose up -d        # Qdrant + Redis
 
-# 4. 导入数据 (化工股季度财报)
+# 4. 安装 Python 依赖
+pip install -r app/requirements.txt
+
+# 5. 导入化工行业数据（可选，用于 Text-to-SQL）
 python scripts/download_finance.py
 
-# 5. 启动
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload  # 后端
-cd frontend && npm run dev                                           # 前端
+# 6. 启动后端
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# 7. 启动 Go 工具层（可选）
+cd go-runtime && go run cmd/scheduler/main.go
+
+# 8. 启动前端
+cd frontend && npm install && npm run dev
 ```
 
 浏览器打开 `http://localhost:5173`。
 
-### Docker
+### Docker 一键启动
 
 ```bash
 docker compose up -d
@@ -305,69 +224,78 @@ docker compose up -d
 
 ---
 
-## License
+## 🗺️ Roadmap
 
-MIT
-=======
+```
+✅ Multi-Agent 协作              Router + 4 专业 Agent
+✅ Workflow DAG                  有向无环图任务编排
+✅ Hybrid RAG                    双路检索 + Rerank + MMR
+✅ Text-to-SQL Pipeline          Schema Link → Guard → Execute → Interpret
+✅ Workflow Trace                实时步骤可视化 (SSE)
+✅ Enterprise Dashboard          企业财务画像面板
+✅ Go Sidecar                    高性能工具调度层
 
-# ChemInvest Agent —— 化工行业的智能投研 Agent 系统
+☐ Plugin Framework              插件化 Skill 扩展
+☐ MCP 协议支持                  Model Context Protocol 集成
+☐ 多轮对话深度思考              记忆压缩 + 多步推理
+☐ 策略回测平台                  历史信号回测 + 业绩归因
+☐ Agent 市场                    Agent & Skill 模板市场
+```
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+---
 
-## 📖 项目简介
+## ❓ 常见问题
 
-ChemInvest Agent 是一个面向化工行业的智能投研 Agent 系统。它基于 **LangGraph** 构建，集成 RAG 混合检索、LightGBM 量化预测、Text-to-SQL 结构化查询，支持 Multi-Agent 协作与流式交互。能够自动分析上市公司财报、行业地位并生成结构化投研报告。
+<details>
+<summary><b>Q: 和 LangChain / LlamaIndex 的 Demo 有什么区别？</b></summary>
 
-> 🎯 本项目作为个人独立开发的 AI Agent 工程实践作品，展示了从数据解析、向量检索、量化建模到 Agent 调度与前端交互的完整技术栈。
+LangChain 的 Demo 通常是单路检索 + 单模型调用，能跑起来就行。ChemInvest 解决了真实投研场景的问题：多路检索并行 + 精排去冗、模型挂了自动降级、SQL 安全校验、Workflow 执行追踪。这不是一个 API 调用的玩具，是一套完整的 Agent 工程实践。
 
-## ✨ 核心功能
+</details>
 
-- **Multi-Agent 协作**：Router 模式多智能体，含财报分析、行业对标、结构化查询、RAG 检索四个子 Agent
-- **混合检索**：Dense + Sparse 双路召回 + Cross-Encoder 重排序 + MMR 多样性重排
-- **Text-to-SQL**：自研 Schema Linking 模块，自然语言转 SQL 准确率 85%+
-- **量化预测**：LightGBM 多因子模型，SHAP 特征归因，每日生成 Top-5 机会池
-- **Go 工具调度层**：Go + Gin 工具服务，Schema 自动发现，并发调用降低延迟 45%
-- **分层记忆**：Redis 短期会话记忆 + 长期用户偏好存储
-- **CI/CD**：GitHub Actions 自动化测试流水线（单元/集成/端到端）
-- **前端**：React 流式聊天界面，支持推理过程与工具调用可视化
+<details>
+<summary><b>Q: 为什么用 Go 做工具调度层？</b></summary>
 
-## 🚀 快速开始
+Python 适合 LLM 调用和 Agent 编排，但工具调用场景（Text-to-SQL 执行、量化计算）对并发和延迟有更高要求。Go Sidecar 通过 gRPC 提供高性能工具服务，Schema 自动发现 + 并发调用，实测延迟比纯 Python 降低 45%。
 
+</details>
 
-# 1. 安装依赖
-pip install -r requirements.txt
+<details>
+<summary><b>Q: 只能用于化工行业吗？</b></summary>
 
-# 2. 配置环境变量
-cp .env.example .env  # 编辑填入 API Key
+核心架构（Multi-Agent、Workflow、RAG、Text-to-SQL）是行业无关的。Prompt 模板在 `configs/prompts/` 下按场景组织，股票池在 `app/config/stock_pool.py` 中配置。换成其他行业只需替换 Prompt 模板和数据源即可。
 
-# 3. 启动服务
-docker-compose up -d       # Qdrant + Redis + PostgreSQL
+</details>
 
-cd app/go-agent && go run main.go  # Go 工具层
+<details>
+<summary><b>Q: Text-to-SQL 准确率怎么样？</b></summary>
 
-python main.py             # FastAPI 网关
+在化工行业财报数据库（约 10 张表）上，自研的 Schema Linking + Guard 校验管线准确率达到 85%+。Schema Linking 负责别名消歧和字段匹配，Guard 做 SQL 安全拦截（禁止 DROP/DELETE/UPDATE），最后 LLM 把查询结果翻译成自然语言。
 
-cd frontend && npm run dev # React 前端
+</details>
 
+<details>
+<summary><b>Q: 为什么不用 LangGraph 的 Checkpoint 而自己实现 Workflow？</b></summary>
 
-## 📊 检索评估
+LangGraph 的 Checkpoint 适合对话状态管理，但投研场景的 Workflow 需要 YAML 声明式编排、依赖 DAG 解析、多 Executor 并发、SSE 实时推送每步状态。自研的 Workflow 框架天然支持这些需求，且不依赖特定框架的版本变更。
 
-在 277 份化工年报测试集上，检索效果如下：
+</details>
 
-| 指标 | 基线 (Hybrid) | + Rerank |
-| :--- | :---: | :---: |
-| Recall@10 | 0.65 | 0.84 |
-| MRR | 0.42 | 0.61 |
+---
 
+## 🤝 贡献
+
+ChemInvest AI Copilot 在持续迭代中，欢迎提 Issue 和 PR。
+
+---
 
 ## 📝 License
 
 本项目采用 [MIT License](LICENSE)。
 
-## 📧 联系方式
+---
 
-- **GitHub**：[@isthar5](https://github.com/isthar5)
-- **Issues**：欢迎提交问题与建议
-
->>>>>>> 287cb7da8175edaa4942f50c9ac276bc35fd0c79
+<p align="center">
+  <b>如果这个项目对你有帮助，请给一个 ⭐ Star 支持一下</b><br>
+  <a href="https://github.com/isthar5/ai_invest_agent">github.com/isthar5/ai_invest_agent</a>
+</p>
